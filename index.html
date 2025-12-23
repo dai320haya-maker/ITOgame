@@ -6,23 +6,60 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Document</title>
    <link rel="stylesheet" href="./CSS/style.css">
-   <script src="./JS/jquery-3.7.1.js"></script>
+   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 
 <body>
 
    <header>
 
+      <div class="title">
+         ITO game
+      </div>
+
+      <div class="container">
+
+         <div class="summaryWindow">
+            <div class="summaryFirst">
+               <li>
+                  「ITOゲーム」は、各プレイヤーにランダムな番号（1〜100）が割り当てられ、お題に対する回答をヒントに互いの番号を推理するパーティーゲームです。
+               </li>
+               <li>
+                  「あなたにとって大事なもの」というお題で<br>
+                  1に近いほど「大事」<br>
+                  100に近いほど「大事ではない」<br>
+                  という尺度で割り当てられた番号をものに例えてください。
+               <li>
+                  互いに質問をして番号を推理し、若い番号順に並べることがゲームのゴールです。<br>
+                  ※自分の番号は他のプレイヤーには見せないでください。
+               </li>
+            </div>
+
+            <div class="summaryRepeat">
+               <p>
+                  1. 数字を生成する ====> 2. 数字の大きさを「大事なもの」に例える ====> 3. 数字を若い順に並べる
+                  <br>
+                  ※自分の番号は他のプレイヤーには見せないでください。
+               </p>
+            </div>
+         </div>
    </header>
 
    <main>
-<div class="indctView">
-生成ボタンを押してください
-</div>
+      <div class="indctView">
+         <div class="indctNum">
+            生成ボタンを押してください
+         </div>
+      </div>
       <div class="button">
          生成
       </div>
+
+      <div class="history">
+
+      </div>
    </main>
+
    <script>
       //     ITOゲーム 実装仕様書
       // 概要
@@ -43,32 +80,32 @@
       // 画面構成
       // 必須要素
       // タイトル
-      // ゲーム名を表示
-      // ゲーム説明エリア
-      // お題の説明
-      // 数字の意味（1＝大事、100＝大事ではない）
-      // 遊び方の説明
-      // ゲームの進め方を3ステップ程度で説明
-      // 番号生成ボタン
-      // クリックで番号を生成
-      // 番号表示エリア
-      // 生成された番号を表示
-      // 注意書きを併記
+      // #ゲーム名を表示
+      // #ゲーム説明エリア
+      // #お題の説明
+      // #数字の意味（1＝大事、100＝大事ではない）
+      // #遊び方の説明
+      // #ゲームの進め方を3ステップ程度で説明
+      // #番号生成ボタン
+      // #クリックで番号を生成
+      // #号表示エリア
+      // #生成された番号を表示
+      // #注意書きを併記
       // 技術要件
       // 使用技術
       // HTML5
       // CSS3
-      // jQuery（CDN経由で読み込み）
+      // #jQuery（CDN経由で読み込み）
       // jQueryの使用箇所（必須）
       // 以下の処理にはjQueryを使用すること：
-      // ボタンのクリックイベント取得
-      // 番号表示エリアへのテキスト挿入
+      // #ボタンのクリックイベント取得
+      // #番号表示エリアへのテキスト挿入
       // DOM要素の表示/非表示制御（任意）
       // ファイル構成
       // project/
-      // ├── index.html    （メインHTML）
-      // ├── style.css     （スタイルシート）
-      // └── script.js     （JavaScript/jQuery）
+      // ├── #index.html    （メインHTML）
+      // ├── #style.css     （スタイルシート）
+      // └── #script.js     （JavaScript/jQuery）
       // ※ 1ファイルにまとめても可
       // 実装のヒント
       // ランダム番号生成
@@ -118,16 +155,42 @@
       // ウェブページでよく使用されるスクリプト言語として知られ、多くのブラウザー以外の環境、例えば Node.js や Apache CouchDB や Adobe Acrobat などでも使用されています。 
       // JavaScript はプロトタイプベースで、マルチパラダイムで、シングルスレッドで、動的な言語であり、オブジェクト指向、命令型、宣言型（関数プログラミングなど）といったスタイルに対応しています。
       // ---------------------<以下に実装する>------------------------------------------------------------------------------------------------------------------------------------------------------------------
-      // let indctNum = "ボタンを押してください"
+
+      // 生成ボタンを押したときのプログラム
       $(".button")
          .on("click", function () {
+
+            // 数字をjQuery化
+            const $indctNum = $(".indctNum")
+
+            // ランダムに1から100を作成する
             const playerNum = Math.floor(Math.random() * 100 + 1)
 
-            $(".indctView").text(playerNum)
-            $(this).text(再生成)
-         })
-         
+            // 数字を表示しボタンの表示を変える
+            $indctNum.text(playerNum)
+            $(this).text("再生成")
 
+            // (再生成時)数字表示のCSSを初期化する
+            $indctNum.removeClass("indctNum-min indctNum-mid indctNum-max")
+            void $indctNum[0].offsetWidth;
+
+            // 数字の大きさごとに表示方法を変える
+            if (playerNum < 34) {
+               $indctNum.addClass("indctNum-min")
+            } else if (playerNum < 67) {
+               $indctNum.addClass("indctNum-mid")
+            } else {
+               $indctNum.addClass("indctNum-max")
+            }
+
+            // 数字を履歴に追加して表示させる
+            $(".history").append(playerNum + "  ")
+
+            // 説明文を変更する
+            $(".summaryFirst").addClass("invisible")
+            $(".summaryRepeat").addClass("visible")
+
+         })
 
    </script>
 </body>
