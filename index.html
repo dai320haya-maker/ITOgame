@@ -6,7 +6,8 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Document</title>
    <link rel="stylesheet" href="./CSS/style.css">
-   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+   <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+      crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -39,24 +40,34 @@
                <p>
                   1. 数字を生成する ====> 2. 数字の大きさを「大事なもの」に例える ====> 3. 数字を若い順に並べる
                   <br>
-                  ※自分の番号は他のプレイヤーには見せないでください。
+                  【注意事項】
+                  自分の番号は他のプレイヤーには見せないでください。
+                  <br>
+                  数字を隠したい場合はカーソルを生成された数字に合わせてください。
+                  <br>
+
                </p>
             </div>
          </div>
+
    </header>
 
    <main>
+
       <div class="indctView">
          <div class="indctNum">
             生成ボタンを押してください
          </div>
       </div>
+
       <div class="button">
          生成
       </div>
 
-      <div class="history">
+      <div class="historyWindow">
+         <div class="history">
 
+         </div>
       </div>
    </main>
 
@@ -100,7 +111,7 @@
       // 以下の処理にはjQueryを使用すること：
       // #ボタンのクリックイベント取得
       // #番号表示エリアへのテキスト挿入
-      // DOM要素の表示/非表示制御（任意）
+      // #DOM要素の表示/非表示制御（任意）
       // ファイル構成
       // project/
       // ├── #index.html    （メインHTML）
@@ -156,12 +167,14 @@
       // JavaScript はプロトタイプベースで、マルチパラダイムで、シングルスレッドで、動的な言語であり、オブジェクト指向、命令型、宣言型（関数プログラミングなど）といったスタイルに対応しています。
       // ---------------------<以下に実装する>------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+
+      // 数字をjQuery化
+      const $indctNum = $(".indctNum")
+
       // 生成ボタンを押したときのプログラム
       $(".button")
          .on("click", function () {
-
-            // 数字をjQuery化
-            const $indctNum = $(".indctNum")
 
             // ランダムに1から100を作成する
             const playerNum = Math.floor(Math.random() * 100 + 1)
@@ -192,6 +205,16 @@
 
          })
 
+      // 数字の非表示
+      $(".indctView").on("mouseover", function () {
+         $indctNum.hide()
+         $(".history").hide()
+      })
+      // 数字の表示
+      $(".indctView").on("mouseout", function () {
+         $indctNum.show()
+         $(".history").show()
+      })
    </script>
 </body>
 
