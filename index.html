@@ -8,6 +8,9 @@
    <link rel="stylesheet" href="./CSS/style.css">
    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
       crossorigin="anonymous"></script>
+   <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
+   <!-- <script src="/JS/supabase_env.js"></script> -->
+
 </head>
 
 <body>
@@ -30,6 +33,7 @@
                   1に近いほど「大事」<br>
                   100に近いほど「大事ではない」<br>
                   という尺度で割り当てられた番号をものに例えてください。
+               </li>
                <li>
                   互いに質問をして番号を推理し、若い番号順に並べることがゲームのゴールです。<br>
                   ※自分の番号は他のプレイヤーには見せないでください。
@@ -43,35 +47,51 @@
                   【注意事項】
                   自分の番号は他のプレイヤーには見せないでください。
                   <br>
-                  数字を隠したい場合はカーソルを生成された数字に合わせてください。
+                  これまで生成した数字が見たい場合はカーソルを生成履歴に合わせてください。
                   <br>
-
-               </p>
             </div>
          </div>
-
    </header>
+
 
    <main>
 
-      <div class="indctView">
-         <div class="indctNum">
-            生成ボタンを押してください
+      <form class="userNameBox">
+         <input type="text" name="userName" class="userNameText" placeholder="プレイヤー名を入力後、エンターキーを押してください" />
+      </form>
+      <div class="gameContainer">
+
+         <div class="indctBox">
+            <div class="indctView">
+               <div class="indctNum">
+                  生成ボタンを押してください
+               </div>
+            </div>
+            <div class="historyWindow">
+               <div>生成履歴</div>
+               <div class="history">
+               </div>
+            </div>
+         </div>
+
+         <form class="asImpBox">
+            <input type="text" name="asImp" class="asImpText" autocomplete="off" placeholder="大事なものに例えてください" />
+         </form>
+         <div class="buttonBox">
+            <div class="button">
+               生成
+            </div>
+            <div class="nextButton">
+               生成をやめて次へ</div>
          </div>
       </div>
 
-      <div class="button">
-         生成
-      </div>
+      <div class="indctAllAsImp">
 
-      <div class="historyWindow">
-         <div class="history">
-
-         </div>
       </div>
    </main>
 
-   <script>
+   <script type="module">
       //     ITOゲーム 実装仕様書
       // 概要
       // 「ITOゲーム」は、各プレイヤーにランダムな番号（1〜100）が割り当てられ、お題に対する回答をヒントに互いの番号を推理するパーティーゲームです。
@@ -168,53 +188,179 @@
       // ---------------------<以下に実装する>------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+      // supabaseクライアントの作成
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+      import { supabaseEnv } from "/JS/supabase_env.js"
+      const supabase_Url = supabaseEnv.supabaseUrl
+      const supabase_Key = supabaseEnv.supabaseKey
+      const supabase = createClient(supabase_Url, supabase_Key)
 
-      // 数字をjQuery化
+      // 事前準備
       const $indctNum = $(".indctNum")
+      const $asImpText = $(".asImpText")
+      const $userNameText = $(".userNameText")
+      let isGameStarted = false
+      let playerId = ""
 
-      // 生成ボタンを押したときのプログラム
-      $(".button")
-         .on("click", function () {
+      //ユーザー名入力後にゲーム画面を表示
+      $userNameText.on("keypress", function (e) {
+         playerId = $(this).val()
+         if (e.key === "Enter") { //エンターキーが押された場合
+            e.preventDefault() //ブラウザの自動リロード禁止
+            $(".gameContainer").addClass("visible") //ゲーム画面を表示
+         } else {
+         }
+      })
 
-            // ランダムに1から100を作成する
-            const playerNum = Math.floor(Math.random() * 100 + 1)
+      // 生成ボタンを押したときの処理
+      $(".button").on("click", async function () {
 
-            // 数字を表示しボタンの表示を変える
-            $indctNum.text(playerNum)
-            $(this).text("再生成")
+         // 例示フォームと生成終了ボタンの表示
+         $(".asImpBox").addClass("visible")
+         $(".nextButton").addClass("visible")
 
-            // (再生成時)数字表示のCSSを初期化する
-            $indctNum.removeClass("indctNum-min indctNum-mid indctNum-max")
-            void $indctNum[0].offsetWidth;
+         // フラグ別の処理
+         if (isGameStarted === true) { //フラグがあるとき(再生成時)
 
-            // 数字の大きさごとに表示方法を変える
-            if (playerNum < 34) {
-               $indctNum.addClass("indctNum-min")
-            } else if (playerNum < 67) {
-               $indctNum.addClass("indctNum-mid")
-            } else {
-               $indctNum.addClass("indctNum-max")
+            // 履歴に前回の数字と例示テキストを追加
+            const lastNum = $indctNum.text()
+            const userText = $asImpText.val()
+            $(".history").append("<div>" + lastNum + " : " + userText + "</div>")
+            if (userText === "") { // 例示テキスト未入力の際はアラートを出し処理終了
+               alert("大事なものに例えて入力してください")
+               return
             }
 
-            // 数字を履歴に追加して表示させる
-            $(".history").append(playerNum + "  ")
+            // Supabaseへデータ送信
+            const { data, error } = await supabase
+               .from('value')
+               .insert([{
+                  player: playerId,
+                  number: parseInt(lastNum),
+                  user_text: userText
+               }])
+            if (error) {
+               console.error("データ送信エラー:", error.message)
+            } else {
+               console.log("送信成功:", data)
+            }
 
-            // 説明文を変更する
+            // 例示フォームをリセット
+            $(".asImpBox").trigger("reset")
+
+         } else if (isGameStarted === false) { //フラグがないとき(初回生成時)
+
+            // 説明文を変更
             $(".summaryFirst").addClass("invisible")
             $(".summaryRepeat").addClass("visible")
 
-         })
+         }// フラグ別の処理はここまで
 
-      // 数字の非表示
-      $(".indctView").on("mouseover", function () {
-         $indctNum.hide()
+         // 数字を表示
+         $indctNum.removeClass("indctNum-min indctNum-mid indctNum-max") // 数字表示のCSSを初期化
+         void $indctNum[0].offsetWidth;
+         const playerNum = Math.floor(Math.random() * 100 + 1) // ランダムに数字を作成
+         if (playerNum < 34) { // 数字の大きさごとにデザインを変えて表示
+            $indctNum.addClass("indctNum-min").text(playerNum)
+         } else if (playerNum >= 35 && playerNum < 67) {
+            $indctNum.addClass("indctNum-mid").text(playerNum)
+         } else if (playerNum >= 68 && playerNum <= 100) {
+            $indctNum.addClass("indctNum-max").text(playerNum)
+         }
+
+         // フラグを立てる
+         isGameStarted = true
+
+      })// 生成ボタンを押したときの処理ここまで
+
+      // 生成履歴の非表示
+      $(".historyWindow").on("mouseout", function () {
          $(".history").hide()
       })
-      // 数字の表示
-      $(".indctView").on("mouseout", function () {
-         $indctNum.show()
+      // 生成履歴の表示
+      $(".historyWindow").on("mouseover", function () {
          $(".history").show()
       })
+
+      // 生成をやめて次の画面へ
+      $(".nextButton").on("click", async function () {
+
+         // Supabaseへデータ送信
+         const lastNum = $indctNum.text()
+         const userText = $asImpText.val()
+         const { data, error } = await supabase
+            .from('value')
+            .insert([
+               {
+                  player: playerId,
+                  number: parseInt(lastNum),
+                  user_text: userText
+               }
+            ])
+         if (error) {
+            console.error("データ送信エラー:", error.message)
+         } else {
+            console.log("送信成功:", data)
+         }
+
+         // 生成画面を非表示
+         $(".gameContainer").removeClass("visible").addClass("invisible")
+
+         // 取得されたすべての例示を表示
+         await showAllAsImp()
+      })
+
+      // --- 全データ取得・ソート表示関数 ---
+
+      async function showAllAsImp() {
+         const { data, error } = await supabase
+            .from('value')
+            .select('user_text')
+         if (error) {
+            console.error("データ取得エラー:", error.message);
+            return;
+         }
+
+         const $allView = $(".indctAllAsImp")
+         $allView.empty()
+
+         if (data && data.length > 0) {
+            $allView.append('<div>テキストの横に予想番号を入力してください</div>')
+
+            const $sortContainer = $('<div id="sortArea"></div>')
+
+            data.forEach((item) => {
+               const rowHtml = `
+                      <div class="guess-row" style="margin-bottom: 10px;">
+                          <input type="number" class="guess-num" placeholder="番号" style="width: 60px">
+                          <span class="guess-text">「${item.user_text}」</span>
+                      </div>
+                  `;
+               $sortContainer.append(rowHtml);
+            });
+
+            $allView.append($sortContainer);
+
+            const $sortBtn = $('<button id="executeSort" class="button">番号順に並び替える</button>');
+            $allView.append($sortBtn);
+
+            $sortBtn.on("click", function () {
+               const rows = $(".guess-row").get();
+               rows.sort(function (a, b) {
+                  const valA = parseInt($(a).find(".guess-num").val()) || 999;
+                  const valB = parseInt($(b).find(".guess-num").val()) || 999;
+                  return valA - valB;
+               });
+               $.each(rows, function (index, row) {
+                  $sortContainer.append(row);
+               });
+            });
+         } else {
+            $allView.append('<p>データがありません。</p>');
+         }
+      }
+
+
    </script>
 </body>
 
