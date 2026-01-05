@@ -313,50 +313,73 @@
       // --- 全データ取得・ソート表示関数 ---
 
       async function showAllAsImp() {
+         // Supabaseからデータ受信
          const { data, error } = await supabase
             .from('value')
-            .select('user_text')
-         if (error) {
-            console.error("データ取得エラー:", error.message);
-            return;
-         }
+            .select('player, user_text, number')
 
-         const $allView = $(".indctAllAsImp")
-         $allView.empty()
+         if (error) return;
+
+         const $allView = $(".indctAllAsImp");
+         $allView.empty();
 
          if (data && data.length > 0) {
-            $allView.append('<div>テキストの横に予想番号を入力してください</div>')
-
-            const $sortContainer = $('<div id="sortArea"></div>')
+            const $sortContainer = $('<div id="sortArea"></div>');
 
             data.forEach((item) => {
+               // CSSで定義したクラス名を割り当てる
                const rowHtml = `
-                      <div class="guess-row" style="margin-bottom: 10px;">
-                          <input type="number" class="guess-num" placeholder="番号" style="width: 60px">
-                          <span class="guess-text">「${item.user_text}」</span>
-                      </div>
-                  `;
+            <div class="guess-row">
+                <div class="player-tag">Player: ${item.player}</div>
+                <div class="flex-container">
+                    <input type="number" class="guess-num" placeholder="予想" data-correct="${item.number}">
+                    <span class="guess-text">「${item.user_text}」</span>
+                    <span class="score-result"></span> <span class="actual-number">正解: ${item.number}</span>
+                </div>
+            </div>
+         `;
                $sortContainer.append(rowHtml);
             });
 
             $allView.append($sortContainer);
 
-            const $sortBtn = $('<button id="executeSort" class="button">番号順に並び替える</button>');
-            $allView.append($sortBtn);
+            // ボタン作成
+            const $sortBtn = $('<button id="executeSort" class="button">番号順に並べ替え</button>');
+            const $revealBtn = $('<button id="revealAnswer" class="button" style="background-color:#ff8c00;">正解発表と採点！</button>');
+            $allView.append($sortBtn).append($revealBtn);
 
+            // --- 並べ替え ---
             $sortBtn.on("click", function () {
                const rows = $(".guess-row").get();
-               rows.sort(function (a, b) {
+               rows.sort((a, b) => {
                   const valA = parseInt($(a).find(".guess-num").val()) || 999;
                   const valB = parseInt($(b).find(".guess-num").val()) || 999;
                   return valA - valB;
                });
-               $.each(rows, function (index, row) {
-                  $sortContainer.append(row);
-               });
+               $.each(rows, (i, row) => $sortContainer.append(row));
             });
-         } else {
-            $allView.append('<p>データがありません。</p>');
+
+            // --- 正解発表 & スコア判定 ---
+            $revealBtn.on("click", function () {
+               $(".guess-row").each(function () {
+                  const $input = $(this).find(".guess-num");
+                  const guess = parseInt($input.val());
+                  const correct = parseInt($input.data("correct"));
+                  const diff = Math.abs(guess - correct); // 差の絶対値を計算
+
+                  let stars = "";
+                  if (diff === 0) stars = "★★★★★ (ピタリ！)";
+                  else if (diff <= 5) stars = "★★★★ (お見事！)";
+                  else if (diff <= 15) stars = "★★★ (近い！)";
+                  else if (diff <= 30) stars = "★★ (おしい)";
+                  else stars = "★ (どんまい)";
+
+                  $(this).find(".score-result").text(stars).fadeIn();
+                  $(this).find(".actual-number").fadeIn();
+               });
+               $(this).prop("disabled", true).text("採点完了");
+            });
+
          }
       }
 
