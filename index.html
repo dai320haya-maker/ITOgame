@@ -246,7 +246,7 @@
             }
 
             // 例示フォームをリセット
-            $(".asImpBox").trigger("reset")
+            $(".asImpText").val("")
 
          } else if (isGameStarted === false) { //フラグがないとき(初回生成時)
 
@@ -313,8 +313,8 @@
       // --- 全データ取得・ソート表示関数 ---
 
       async function showAllAsImp() {
-$(".summaryRepeat").html("<p>3. 相手の結果を予想し数字を若い順に並べる⇒4.正解発表を確認する<br>相手の数字は正解確認時に表示されます</p>");
-          
+         $(".summaryRepeat").html("<p>3. 相手の結果を予想し数字を若い順に並べる⇒4.正解発表を確認する<br>相手の数字は正解確認時に表示されます</p>");
+
          // Supabaseからデータ受信
          const { data, error } = await supabase
             .from('value')
@@ -329,7 +329,7 @@ $(".summaryRepeat").html("<p>3. 相手の結果を予想し数字を若い順に
             const $sortContainer = $('<div id="sortArea"></div>')
 
             data.forEach((item) => {
-              
+
                const rowHtml = `
             <div class="guess-row">
                 <div class="player-tag">Player名: ${item.player}</div>
@@ -398,6 +398,16 @@ $(".summaryRepeat").html("<p>3. 相手の結果を予想し数字を若い順に
                   $(this).find(".actual-number").fadeIn();
                });
 
+               // 1. 「もう一度遊ぶ」ボタンを新しく作成して追加
+               const $retryBtn = $('<button id="retryGame" class="button" style="background-color:#28a745; margin-top:20px;">もう一度遊ぶ</button>');
+
+               // 2. ボタンを画面（.indctAllAsImp の一番下）に追加
+               $(".indctAllAsImp").append($retryBtn);
+
+               // 3. ボタンがクリックされた時の処理（ページをリロード）
+               $retryBtn.on("click", function () {
+                  location.reload(); // ページを最初から読み込み直す
+               });
                $(this).prop("disabled", true).text("採点完了");
             });
          }
