@@ -42,7 +42,7 @@
 
             <div class="summaryRepeat">
                <p>
-                  1. 数字を生成する ====> 2. 数字の大きさを「大事なもの」に例える ====> 3. 数字を若い順に並べる
+                  1. 数字を生成する ====> 2. 数字の大きさを「大事なもの」に例える
                   <br>
                   【注意事項】
                   自分の番号は他のプレイヤーには見せないでください。
@@ -313,13 +313,15 @@
       // --- 全データ取得・ソート表示関数 ---
 
       async function showAllAsImp() {
+$(".summaryRepeat").html("<p>3. 相手の結果を予想し数字を若い順に並べる⇒4.正解発表を確認する<br>相手の数字は正解確認時に表示されます</p>");
+          
          // Supabaseからデータ受信
          const { data, error } = await supabase
             .from('value')
             .select('player, user_text, number')
 
          if (error) return;
-         // 自分と相手の例示テキストをすべて表示
+         // 数字生成後の画面を表示
          const $allView = $(".indctAllAsImp");
          $allView.empty();
 
@@ -327,25 +329,25 @@
             const $sortContainer = $('<div id="sortArea"></div>')
 
             data.forEach((item) => {
-               // CSSで定義したクラス名を割り当てる
+              
                const rowHtml = `
             <div class="guess-row">
                 <div class="player-tag">Player名: ${item.player}</div>
                 <div class="flex-container">
                   <input type="number" class="guess-num" 
                   placeholder="数字を予想してください" 
-                  x-value="${item.number}"
+                  value="${item.number}"
                   data-correct="${item.number}">
                     <span class="guess-text">「${item.user_text}」</span>
                     <span class="score-result"></span>
                     <span class="actual-number">正解: ${item.number}</span>
                 </div>
             </div>
-         `;
-               $sortContainer.append(rowHtml);
+         `
+               $sortContainer.append(rowHtml)
             });
 
-            $allView.append($sortContainer);
+            $allView.append($sortContainer)
 
 
             // ボタン作成
