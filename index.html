@@ -350,7 +350,7 @@
 
             // ボタン作成
             const $sortBtn = $('<button id="executeSort" class="button">番号順に並べ替え</button>');
-            const $revealBtn = $('<button id="revealAnswer" class="button" style="background-color:#ff8c00;">正解発表と採点！</button>');
+            const $revealBtn = $('<button id="revealAnswer" class="button" style="background-color:#ff8c00;">正解を見る</button>');
             $allView.append($sortBtn).append($revealBtn);
 
             // --- 並べ替え ---
@@ -390,7 +390,7 @@
                   else if (diff <= 5) stars = "★★★★ (お見事！)";
                   else if (diff <= 15) stars = "★★★ (近い！)";
                   else if (diff <= 30) stars = "★★ (おしい)";
-                  else stars = "★ (どんまい)";
+                  else stars = "★ (残念)";
 
                   $(this).find(".score-result").text(stars).fadeIn();
                   $(this).find(".actual-number").fadeIn();
