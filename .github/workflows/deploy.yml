@@ -1,0 +1,35 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"] # mainブランチにPushされたら実行
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create JS folder and env file
+        run: |
+          mkdir -p JS
+          echo "export const supabaseEnv = {
+            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
+            supabaseKey: '${{ secrets.SUPABASE_KEY }}'
+          };" > JS/supabase_env.js
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
