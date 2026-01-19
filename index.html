@@ -190,7 +190,7 @@
 
       // supabaseクライアントの作成
       import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
-      import { supabaseEnv } from "/JS/supabase_env.js"
+      import { supabaseEnv } from "./JS/supabase_env.js"
       const supabase_Url = supabaseEnv.supabaseUrl
       const supabase_Key = supabaseEnv.supabaseKey
       const supabase = createClient(supabase_Url, supabase_Key)
