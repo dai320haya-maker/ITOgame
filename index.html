@@ -382,21 +382,31 @@
 
                // ③ その後、各行に対して採点処理を行う
                $(".guess-row").each(function () {
-                  const $input = $(this).find(".guess-num");
-                  const guess = parseInt($input.val());
-                  const correct = parseInt($input.data("correct"));
-                  const diff = Math.abs(guess - correct);
+                  // 1. その行のプレイヤー名を取得
+                  const rowPlayerName = $(this).find(".player-tag").text().replace("Player名: ", "").trim();
 
-                  let stars = "";
-                  if (diff === 0) stars = "★★★★★ (ピタリ！)";
-                  else if (diff <= 5) stars = "★★★★ (お見事！)";
-                  else if (diff <= 15) stars = "★★★ (近い！)";
-                  else if (diff <= 30) stars = "★★ (おしい)";
-                  else stars = "★ (残念)";
+                  // 2. 「自分の名前」と「この行の名前」が一致するかチェック
+                  if (rowPlayerName === playerId) {
+                     // 自分の行の場合：正解の数字だけを表示して、評価（stars）は表示しない
+                     $(this).find(".actual-number").fadeIn();
+                     $(this).find(".score-result").text("（あなたの数字）").fadeIn(); // または空文字 .text("")
+                  } else {
+                     // 他人の行の場合：通常通り評価と正解を表示
+                     const guess = parseInt($(this).find(".guess-num").val()) || 0;
+                     const correct = parseInt($(this).find(".guess-num").data("correct"));
+                     const diff = Math.abs(guess - correct);
 
-                  $(this).find(".score-result").text(stars).fadeIn();
-                  $(this).find(".actual-number").fadeIn();
-               });
+                     let stars = "";
+                     if (diff === 0) stars = "★★★★★ (ピタリ！)";
+                     else if (diff <= 5) stars = "★★★★ (お見事！)";
+                     else if (diff <= 10) stars = "★★★ (惜しい！)";
+                     else if (diff <= 20) stars = "★★ (まあまあ)";
+                     else stars = "★ (残念...)";
+
+                     $(this).find(".score-result").text(stars).fadeIn();
+                     $(this).find(".actual-number").fadeIn();
+                  }
+                  });
 
                // 1. 「もう一度遊ぶ」ボタンを新しく作成して追加
                const $retryBtn = $('<button id="retryGame" class="button" style="background-color:#28a745; margin-top:20px;">もう一度遊ぶ</button>');
