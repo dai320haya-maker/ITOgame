@@ -74,9 +74,9 @@
             </div>
          </div>
 
-         <form class="asImpBox">
+         <div class="asImpBox">
             <input type="text" name="asImp" class="asImpText" autocomplete="off" placeholder="大事なものに例えてください" />
-         </form>
+         </div>
          <div class="buttonBox">
             <div class="button">
                生成
@@ -319,22 +319,26 @@
             .select('player, user_text, number')
 
          if (error) return;
-
+         // 自分と相手の例示テキストをすべて表示
          const $allView = $(".indctAllAsImp");
          $allView.empty();
 
          if (data && data.length > 0) {
-            const $sortContainer = $('<div id="sortArea"></div>');
+            const $sortContainer = $('<div id="sortArea"></div>')
 
             data.forEach((item) => {
                // CSSで定義したクラス名を割り当てる
                const rowHtml = `
             <div class="guess-row">
-                <div class="player-tag">Player: ${item.player}</div>
+                <div class="player-tag">Player名: ${item.player}</div>
                 <div class="flex-container">
-                    <input type="number" class="guess-num" placeholder="予想" data-correct="${item.number}">
+                  <input type="number" class="guess-num" 
+                  placeholder="数字を予想してください" 
+                  x-value="${item.number}"
+                  data-correct="${item.number}">
                     <span class="guess-text">「${item.user_text}」</span>
-                    <span class="score-result"></span> <span class="actual-number">正解: ${item.number}</span>
+                    <span class="score-result"></span>
+                    <span class="actual-number">正解: ${item.number}</span>
                 </div>
             </div>
          `;
@@ -342,6 +346,7 @@
             });
 
             $allView.append($sortContainer);
+
 
             // ボタン作成
             const $sortBtn = $('<button id="executeSort" class="button">番号順に並べ替え</button>');
@@ -361,11 +366,24 @@
 
             // --- 正解発表 & スコア判定 ---
             $revealBtn.on("click", function () {
+               // ① まず、すべての行（.guess-row）を取得して「正解の数字」順に並び替える
+               const rows = $(".guess-row").get();
+               rows.sort((a, b) => {
+                  // data-correct に隠しておいた正解の数字を取得して比較する
+                  const valA = parseInt($(a).find(".guess-num").data("correct"));
+                  const valB = parseInt($(b).find(".guess-num").data("correct"));
+                  return valA - valB; // 小さい順（昇順）
+               });
+
+               // ② 並び替えた順に画面上のコンテナ（#sortArea）に再配置する
+               $.each(rows, (i, row) => $("#sortArea").append(row));
+
+               // ③ その後、各行に対して採点処理を行う
                $(".guess-row").each(function () {
                   const $input = $(this).find(".guess-num");
                   const guess = parseInt($input.val());
                   const correct = parseInt($input.data("correct"));
-                  const diff = Math.abs(guess - correct); // 差の絶対値を計算
+                  const diff = Math.abs(guess - correct);
 
                   let stars = "";
                   if (diff === 0) stars = "★★★★★ (ピタリ！)";
@@ -377,9 +395,9 @@
                   $(this).find(".score-result").text(stars).fadeIn();
                   $(this).find(".actual-number").fadeIn();
                });
+
                $(this).prop("disabled", true).text("採点完了");
             });
-
          }
       }
 
