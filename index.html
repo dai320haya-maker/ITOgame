@@ -364,6 +364,7 @@
                      <div class="player-tag">Player名: ${item.player} ${isMe ? '(あなた)' : ''}</div>
                      <div class="flex-container">
                      <input type="number" class="guess-num" 
+                        min="1" max="100"
                         placeholder="${isMe ? '' : '数字を予想'}" 
                         value="${isMe ? displayNum : ''}" 
                         ${isMe ? 'readonly' : ''}
